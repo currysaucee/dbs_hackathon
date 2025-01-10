@@ -4,6 +4,7 @@ const config = {
   SOCKET_BASE_URL: "http://localhost:8080",
   ACCESS_TOKEN_REFRESH_INTERVAL: 10000,
   LOGIN_ENDPOINT: "auth/login",
+  REGISTER_ENDPOINT: "auth/register",
   LOGOUT_ENDPOINT: "auth/logout",
   REFRESH_ENDPOINT: "auth/refresh",
   NEW_TRADE_ENDPOINT: "data/trade",
