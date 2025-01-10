@@ -19,12 +19,46 @@ import {
   cilSettings,
   cilTask,
   cilUser,
+  cilAccountLogout,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-
+import config from '../../config'
 import avatar8 from './../../assets/images/avatars/8.jpg'
+import { useNavigate } from 'react-router-dom'
 
 const AppHeaderDropdown = () => {
+
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token'); 
+      if (!refreshToken) {
+        console.error('No refresh token found');
+        return;
+      }
+  
+      const response = await fetch(`${config.API_BASE_URL}/${config.LOGOUT_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }), 
+      });
+  
+      if (response.ok) {
+        console.log('Logout successful');
+        localStorage.removeItem('access_token'); 
+        localStorage.removeItem('refresh_token'); 
+        navigate('/login'); 
+      } else {
+        console.error('Failed to log out');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+  
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
@@ -84,9 +118,13 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownDivider />
-        <CDropdownItem href="#">
-          <CIcon icon={cilLockLocked} className="me-2" />
-          Lock Account
+        <CDropdownItem
+          className="d-flex align-items-center"
+          as="button"
+          type="button"
+          onClick={handleLogout} // Call handleLogout on click
+        >
+          <CIcon className="me-2" icon={cilAccountLogout} size="lg" /> Logout
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

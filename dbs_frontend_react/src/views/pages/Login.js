@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import {
   CButton,
   CCard,
@@ -15,17 +15,18 @@ import {
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
-import config from '../../../config';
+import config from '../../config';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${config.API_BASE_URL}${config.LOGIN_ENDPOINT}`, {
+      const response = await fetch(`${config.API_BASE_URL}/${config.LOGIN_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +40,10 @@ const Login = () => {
       const data = await response.json();
       if (response.ok) {
         console.log('Login successful:', data);
-        localStorage.setItem('token', data.access_token); // Store the JWT token in localStorage
+        localStorage.setItem('access_token', data.access_token); 
+        localStorage.setItem('refresh_token', data.refresh_token); 
+
+        navigate('/dashboard'); 
       } else {
         console.error('Login failed:', data);
       }
@@ -108,11 +112,8 @@ const Login = () => {
               <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
                 <CCardBody className="text-center">
                   <div>
-                    <h2>Sign up</h2>
-                    <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
+                    <h2> Hey there... </h2>
+                    <h2>what are you waiting for?</h2>
                     <Link to="/register">
                       <CButton color="primary" className="mt-3" active tabIndex={-1}>
                         Register Now!

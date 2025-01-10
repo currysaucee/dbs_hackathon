@@ -5,3 +5,4 @@ flask-jwt-extended
 python-dotenv
 pymysql
 flask-cors
+flask_jwt
