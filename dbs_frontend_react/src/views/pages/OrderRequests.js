@@ -35,6 +35,7 @@ const OrderRequests = () => {
   const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
   const [carbonCredit, setCarbonCredit] = useState(config.MOCK_CARBON_CREDIT);
   const [sortDirection, setSortDirection] = useState('desc');
+  const [boolChecked, setBoolChecked] = useState([])
 
   const addToast = (color, message) => {
     const newToast = { id: Date.now(), color, message };
@@ -82,6 +83,7 @@ const OrderRequests = () => {
     };
 
     fetchData();
+    setBoolChecked(new Array(len).fill(0))
 
     const socket = io(config.SOCKET_BASE_URL);
     socket.on('new_trade', (newTrade) => {
