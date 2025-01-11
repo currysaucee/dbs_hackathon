@@ -13,7 +13,6 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // ADD HERE TO REGISTER YOUR PAGE
 // Pages
-const Table = React.lazy(() => import('./views/pages/Table')) 
 const Login = React.lazy(() => import('./views/pages/Login')) 
 const Register = React.lazy(() => import('./views/pages/Register')) 
 const Page404 = React.lazy(() => import('./views/pages/Page404')) 

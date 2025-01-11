@@ -2,7 +2,6 @@ import React from 'react'
 
 // ADD HERE TO REGISTER YOUR PAGE
 const Dashboard = React.lazy(() => import('./views/pages/Dashboard'))
-const Table = React.lazy(() => import('./views/pages/Table'))
 const Order = React.lazy(() => import('./views/pages/Order'))
 const MakeRequest = React.lazy(() => import('./views/pages/MakeRequest'))
 const OrderRequests = React.lazy(() => import('./views/pages/OrderRequests'))
@@ -62,7 +61,6 @@ const Widgets = React.lazy(() => import('./views/template_examples/widgets/Widge
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/table', name: 'Table', element: Table },
   { path: '/order', name: 'Order', element: Order },
   { path: '/MakeRequest', name: 'MakeRequest', element: MakeRequest },
   { path: '/OrderRequests', name: 'OrderRequests', element: OrderRequests },

@@ -36,12 +36,6 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Table',
-    to: '/table',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
     name: 'MakeRequest',
     to: '/MakeRequest',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
@@ -50,6 +44,8 @@ const _nav = [
     component: CNavItem,
     name: 'OrderRequests',
     to: '/OrderRequests',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />
+  },
   {
     component: CNavTitle,
     name: 'Template Stuff (Refer here)',

@@ -18,5 +18,5 @@ const config = {
   COMPANIES: ['Apple', 'Amazon', 'Tesla', 'Google', 'Microsoft'],
   MOCK_ACCOUNT_BALANCE: 1000000,
   MOCK_CARBON_CREDIT: 1000,
-
+}
 export default config

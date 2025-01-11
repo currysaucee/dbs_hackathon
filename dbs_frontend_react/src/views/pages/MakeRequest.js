@@ -19,7 +19,7 @@ import {
   CCardText,
   CCallout,
 } from '@coreui/react';
-import config from '../../config'; 
+import config from '../../config';
 import { useNavigate } from 'react-router-dom';
 
 const MakeRequest = () => {
@@ -33,81 +33,69 @@ const MakeRequest = () => {
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [validated, setValidated] = useState(false);
-  const [currDate, setCurrDate] = useState('')
-  const [curr_user_id, setCurrUserId] = useState('')
-  const [receiverId, setReceiverId] = useState('')
+  const [currDate, setCurrDate] = useState('');
+  const [curr_user_id, setCurrUserId] = useState('');
+  const [receiverId, setReceiverId] = useState('');
 
   const get_receiver_id = async (company_name) => {
-    const response = await fetch(`${config.API_BASE_URL}/${config.GET_ALL_ACCOUNTS}`, {
+    const response = await fetch(
+      `${config.API_BASE_URL}/${config.GET_ALL_ACCOUNTS}`,
+      {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
-      });
-    data = response.json()
+      }
+    );
+    const data = await response.json();
     for (const key in data) {
-    if (data[key]['name'] === company_name) {
+      if (data[key]['name'] === company_name) {
         return data[key]['id'];
+      }
     }
-
-  }
+  };
 
   const get_requestor_id = async () => {
-    const response = await fetch(`${config.API_BASE_URL}/${config.ACCOUNT_ENDPOINT}`);
-        const result = await response.json();
-        const requestor_comp_name = result['name']
-    return get_receiver_id(requestor_comp_name)
-  }
-
-
+    const response = await fetch(
+      `${config.API_BASE_URL}/${config.ACCOUNT_ENDPOINT}`
+    );
+    const result = await response.json();
+    const requestor_comp_name = result['name'];
+    return get_receiver_id(requestor_comp_name);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-//   new_order = Order(
-//     requestor_id = data.get("requestorId"),
-//     receiver_id = data.get("receiverId"),
-//     alert_id = new_alert.id,
-//     carbonQuantity = data.get("carbonQuantity"),
-//     status = "Active",
-//     createdAt = datetime.now(),
-//     updatedAt = None,
-//     requestType = data.get("requestType"),
-//     requestReason = data.get("requestReason"),
-//     rejectReason = data.get("rejectReason") | None
-// )
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("trying to handle submit")
     const form = e.currentTarget;
-    console.log(form)
     if (form.checkValidity() === false) {
-      console.log("not validate")
       e.preventDefault();
       e.stopPropagation();
     }
 
     setValidated(true);
-
     if (!form.checkValidity()) return;
-    
+
     setLoading(true);
-    formData[requestorId] = get_requestor_id()
-    formData[receiver_id] = get_receiver_id(e.company)
-    formData[carbonQuantity] = e.carbonQuantity
-    formData[requestType] = e.requestType
-    formData[requestReason] = e.requestReason
-    // formData[requesterId] localStorage.
+    formData.requestorId = await get_requestor_id();
+    formData.receiverId = await get_receiver_id(formData.company);
+
     try {
-      const response = await fetch(`${config.API_BASE_URL}/${config.NEW_TRADE_ENDPOINT}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${config.API_BASE_URL}/${config.NEW_TRADE_ENDPOINT}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
       if (response.ok) {
@@ -170,7 +158,7 @@ const MakeRequest = () => {
                 <option value="buy">BUY</option>
                 <option value="sell">SELL</option>
               </CFormSelect>
-              <CFormFeedback invalid>Please select an action.</CFormFeedback> 
+              <CFormFeedback invalid>Please select an action.</CFormFeedback>
             </div>
             <div className="mb-3">
               <CFormLabel htmlFor="quantity">Quantity</CFormLabel>
@@ -188,7 +176,7 @@ const MakeRequest = () => {
             <div className="mb-3">
               <CFormLabel htmlFor="reqreason">Request Reason</CFormLabel>
               <CFormInput
-                type="string"
+                type="text"
                 id="reqreason"
                 name="reqreason"
                 value={formData.reqreason}
