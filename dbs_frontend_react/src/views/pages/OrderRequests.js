@@ -83,7 +83,7 @@ const OrderRequests = () => {
     };
 
     fetchData();
-    setBoolChecked(new Array(len).fill(0))
+    setBoolChecked(new Array(boolChecked.length).fill(0))
 
     const socket = io(config.SOCKET_BASE_URL);
     socket.on('new_trade', (newTrade) => {
