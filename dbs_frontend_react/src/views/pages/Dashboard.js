@@ -188,7 +188,6 @@ const Table = () => {
     setLoading(true);
 
     try {
-      console.log('sup man')
       const response = await fetch(`${config.API_BASE_URL}/${config.AMEND_ORDER_ENDPOINT}`, {
         method: 'POST',
         headers: {
