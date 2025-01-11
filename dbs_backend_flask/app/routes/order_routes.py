@@ -50,3 +50,16 @@ def create_order():
     
     except:
         return jsonify("There was a problem creating the order."), 400
+
+
+@bp.route("/deleteOrder/<string:id>", methods=["DELETE"])
+def delete_Order(id):
+    order = Order.query.filter_by(id=id).first()
+
+    if not order:
+        return jsonify({"error": "Order with ID not found and cannot be deleted"}), 404
+
+    db.session.delete(order)
+    db.session.commit()
+
+    return jsonify({"message": "Order successfully deleted."}), 200
