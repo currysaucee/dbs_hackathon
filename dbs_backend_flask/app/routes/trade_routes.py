@@ -25,6 +25,7 @@ def get_trade_by_id():
 
 @bp.route("/validate_and_accept_trade", methods=["POST"])
 def validate_and_accept_trade():
+    # if it's not valid, it'll be rejected
     data = request.json
     #model of trade
     #         "id": self.id,
@@ -35,16 +36,18 @@ def validate_and_accept_trade():
     #         "timestamp": self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
     #         "created_by": self.created_by,
     trade_id = data['trade_id']
-    trade_info = Trade.query.filter_by(id=trade_id).first()
-    alert = Alert.query.filter_by(id=seller_id).first()
-    if alert.alertDateTime > datetime.now():
-        return jsonify({"message": "Alert has expired."}), 400
     if trade_info['action'] == 'buy':
         buyer_id = data['other_id']
         seller_id = data['my_id']
     else:
         buyer_id = data['my_id']
         seller_id = data['id']
+    trade_info = Trade.query.filter_by(id=trade_id).first()
+    alert = Alert.query.filter_by(id=seller_id).first()
+    if alert.alertDateTime > datetime.now():
+        trade_info.status = 'Reject'
+        alert.status = 'expired'
+        return jsonify({"message": "Alert has expired."}), 400
     try:
         COST_PER_CARBON_TOKEN = 10
         total_amt_req = COST_PER_CARBON_TOKEN * trade_info.quantity 
@@ -53,12 +56,16 @@ def validate_and_accept_trade():
         available_cashbalance_buyer = buyer_id.cashBalance
         available_carbonbalance_buyer = buyer_id.carbonBalance
         if available_cashbalance_buyer < total_amt_req:
+            trade_info.status = 'Reject'
+            alert.status = 'Complete'
             return jsonify({"message": "Insufficient funds."}), 400
         # check if seller has sufficient tokens
         seller = Account.query.filter_by(id=seller_id).first()
         available_cashbalance_seller = seller_id.cashBalance
         available_carbonbalance_seller = seller_id.carbonBalance
         if available_carbonbalance_seller < trade_info.quantity:
+            trade_info.status = 'Reject'
+            alert.status = 'Complete'
             return jsonify({"message": "Insufficient carbon tokens."}), 400
         available_carbonbalance_buyer += trade_info.quantity 
         available_carbonbalance_seller -= trade_info.quantity 
@@ -69,10 +76,25 @@ def validate_and_accept_trade():
         buyer.cashBalance = available_cashbalance_buyer
         seller.cashBalance = available_cashbalance_seller
         # Set the Status of the order to be complete
-        trade_info.status = "Complete"
+        trade_info.status = "Accept"
         alert.status = "Complete"
         db.session.commit()
         return jsonify({"message": "Trade successfully Made."}), 200
     except:
         return jsonify({"message": "There was a problem creating the order."}), 400
 
+@bp.route("/reject_trade", methods=["POST"])
+def reject_trade():
+    data = request.json
+    trade_id = data['trade_id']
+    if trade_info['action'] == 'buy':
+        seller_id = data['my_id']
+    else:
+        seller_id = data['id']
+    seller_id = data.seller_id
+    trade_info = Trade.query.filter_by(id=trade_id).first()
+    trade_info.status = 'Reject'
+    alert = Alert.query.filter_by(id=seller_id).first()
+    alert.status = 'Complete'
+    db.session.commit()
+    return jsonify({"message": "Trade successfully Rejected."}), 200
