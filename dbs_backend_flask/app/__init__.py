@@ -26,10 +26,12 @@ def create_app():
     with app.app_context():
         from .routes.auth_routes import bp as auth_routes
         from .routes.data_routes import bp as data_routes
+        from .routes.order_routes import bp as order_routes
         
         app.register_blueprint(auth_routes, url_prefix="/auth")
         app.register_blueprint(data_routes, url_prefix="/data")  # Register data_routes
-        db.create_all()  # Create database tables
+        app.register_blueprint(order_routes, url_prefix="/order")  # Register data_routes
+        # db.create_all()  # Create database tables
         
         init_socketio(app)
 

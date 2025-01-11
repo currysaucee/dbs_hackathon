@@ -1,387 +1,398 @@
-import React from 'react'
-import classNames from 'classnames'
-
+import React, { useState, useEffect } from 'react';
 import {
-  CAvatar,
-  CButton,
-  CButtonGroup,
+  CContainer,
   CCard,
   CCardBody,
-  CCardFooter,
-  CCardHeader,
-  CCol,
-  CProgress,
-  CRow,
   CTable,
+  CTableHead,
+  CTableRow,
+  CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import {
-  cibCcAmex,
-  cibCcApplePay,
-  cibCcMastercard,
-  cibCcPaypal,
-  cibCcStripe,
-  cibCcVisa,
-  cibGoogle,
-  cibFacebook,
-  cibLinkedin,
-  cifBr,
-  cifEs,
-  cifFr,
-  cifIn,
-  cifPl,
-  cifUs,
-  cibTwitter,
-  cilCloudDownload,
-  cilPeople,
-  cilUser,
-  cilUserFemale,
-} from '@coreui/icons'
+  CButton,
+  CToast,
+  CToastBody,
+  CToastClose,
+  CToaster,
+  CRow,
+  CCol,
+  CModal, 
+  CModalBody, 
+  CModalFooter, 
+  CModalHeader, 
+  CModalTitle,
+  CForm,
+  CFormLabel,
+  CFormSelect,
+  CFormFeedback,
+  CFormInput
+} from '@coreui/react';
+import { io } from 'socket.io-client'; 
+import config from '../../config';
 
-import avatar1 from 'src/assets/images/avatars/1.jpg'
-import avatar2 from 'src/assets/images/avatars/2.jpg'
-import avatar3 from 'src/assets/images/avatars/3.jpg'
-import avatar4 from 'src/assets/images/avatars/4.jpg'
-import avatar5 from 'src/assets/images/avatars/5.jpg'
-import avatar6 from 'src/assets/images/avatars/6.jpg'
+const Table = () => {
+  console.log("Table page is loaded");
+  const [data, setData] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [toasts, setToasts] = useState([]);
+  const [newRowId, setNewRowId] = useState(null); 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editDetails, setEditDetails] = useState([]);
+  const [validated, setValidated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [amountChanged, setAmountChanged] = useState();
+  const [sortColumn, setSortColumn] = useState('timestamp');
+  const [accountBalance, setAccountBalance] = useState(config.MOCK_ACCOUNT_BALANCE);
+  const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
+  const [carbonCredit, setCarbonCredit] = useState(config.MOCK_CARBON_CREDIT);
+  const [sortDirection, setSortDirection] = useState('desc');
+  const company_id = localStorage.getItem('company_id');
 
-import WidgetsBrand from '../template_examples/widgets/WidgetsBrand'
-import WidgetsDropdown from '../template_examples/widgets/WidgetsDropdown'
-import MainChart from '../template_examples/dashboard/MainChart'
+  const addToast = (color, message) => {
+    const newToast = { id: Date.now(), color, message };
+    setToasts([...toasts, newToast]);
 
-const Dashboard = () => {
-  const progressExample = [
-    { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
-    { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
-    { title: 'Pageviews', value: '78.706 Views', percent: 60, color: 'warning' },
-    { title: 'New Users', value: '22.123 Users', percent: 80, color: 'danger' },
-    { title: 'Bounce Rate', value: 'Average Rate', percent: 40.15, color: 'primary' },
-  ]
+    setTimeout(() => {
+      setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== newToast.id));
+    }, 3000);
+  };
 
-  const progressGroupExample1 = [
-    { title: 'Monday', value1: 34, value2: 78 },
-    { title: 'Tuesday', value1: 56, value2: 94 },
-    { title: 'Wednesday', value1: 12, value2: 67 },
-    { title: 'Thursday', value1: 43, value2: 91 },
-    { title: 'Friday', value1: 22, value2: 73 },
-    { title: 'Saturday', value1: 53, value2: 82 },
-    { title: 'Sunday', value1: 9, value2: 69 },
-  ]
+  const onEditClick = (row) => {
+    console.log(row)
+    setEditDetails(row)
+    setAmountChanged(row.price)
+    setShowEditModal(true);
+  }
 
-  const progressGroupExample2 = [
-    { title: 'Male', icon: cilUser, value: 53 },
-    { title: 'Female', icon: cilUserFemale, value: 43 },
-  ]
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.ACCOUNT_ENDPOINT}`);
+        const result = await response.json();
 
-  const progressGroupExample3 = [
-    { title: 'Organic Search', icon: cibGoogle, percent: 56, value: '191,235' },
-    { title: 'Facebook', icon: cibFacebook, percent: 15, value: '51,223' },
-    { title: 'Twitter', icon: cibTwitter, percent: 11, value: '37,564' },
-    { title: 'LinkedIn', icon: cibLinkedin, percent: 8, value: '27,319' },
-  ]
+        if (result && result.length > 0) {
+          setAccountBalance(result.cashBalance)
+          setCarbonCredit(result.carbonBalance)
+          setAccountName(result.name)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-  const tableExample = [
-    {
-      avatar: { src: avatar1, status: 'success' },
-      user: {
-        name: 'Yiorgos Avraamu',
-        new: true,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'USA', flag: cifUs },
-      usage: {
-        value: 50,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'success',
-      },
-      payment: { name: 'Mastercard', icon: cibCcMastercard },
-      activity: '10 sec ago',
-    },
-    {
-      avatar: { src: avatar2, status: 'danger' },
-      user: {
-        name: 'Avram Tarasios',
-        new: false,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'Brazil', flag: cifBr },
-      usage: {
-        value: 22,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'info',
-      },
-      payment: { name: 'Visa', icon: cibCcVisa },
-      activity: '5 minutes ago',
-    },
-    {
-      avatar: { src: avatar3, status: 'warning' },
-      user: { name: 'Quintin Ed', new: true, registered: 'Jan 1, 2023' },
-      country: { name: 'India', flag: cifIn },
-      usage: {
-        value: 74,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'warning',
-      },
-      payment: { name: 'Stripe', icon: cibCcStripe },
-      activity: '1 hour ago',
-    },
-    {
-      avatar: { src: avatar4, status: 'secondary' },
-      user: { name: 'Enéas Kwadwo', new: true, registered: 'Jan 1, 2023' },
-      country: { name: 'France', flag: cifFr },
-      usage: {
-        value: 98,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'danger',
-      },
-      payment: { name: 'PayPal', icon: cibCcPaypal },
-      activity: 'Last month',
-    },
-    {
-      avatar: { src: avatar5, status: 'success' },
-      user: {
-        name: 'Agapetus Tadeáš',
-        new: true,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'Spain', flag: cifEs },
-      usage: {
-        value: 22,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'primary',
-      },
-      payment: { name: 'Google Wallet', icon: cibCcApplePay },
-      activity: 'Last week',
-    },
-    {
-      avatar: { src: avatar6, status: 'danger' },
-      user: {
-        name: 'Friderik Dávid',
-        new: true,
-        registered: 'Jan 1, 2023',
-      },
-      country: { name: 'Poland', flag: cifPl },
-      usage: {
-        value: 43,
-        period: 'Jun 11, 2023 - Jul 10, 2023',
-        color: 'success',
-      },
-      payment: { name: 'Amex', icon: cibCcAmex },
-      activity: 'Last week',
-    },
-  ]
+    fetchCompanyDetails();
+  })
+
+  useEffect(() => {
+    const fetchMockData = async() => {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.MOCK_DATA_ENDPOINT}`)
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setColumns(Object.keys(result[0]));
+          
+          const sortedData = result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setData(sortedData); 
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    const fetchData = async () => { 
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.GET_ORDERS_BY_ACCOUNT_ENDPOINT}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: company_id,
+          }),        
+        });
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setColumns(Object.keys(result[0]));
+          
+          const sortedData = result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setData(sortedData); 
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        fetchMockData();
+      }
+    };
+
+    fetchData();
+
+    const socket = io(config.SOCKET_BASE_URL);
+    socket.on('new_trade', (newTrade) => {
+      console.log('New trade received:', newTrade);
+      setNewRowId(newTrade.uuid || newTrade.id); 
+      setData((prevData) => {
+        const updatedData = [newTrade, ...prevData];
+        return updatedData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const handleCancel = async (e) => {
+    e.preventDefault();
+    console.log("trying to handle cancel")
+    try {
+      console.log('sup man')
+      const response = await fetch(`${config.API_BASE_URL}/${config.DELETE_ORDER_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: order_id,
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        addToast('success', `${result.message}}`);
+      } 
+    } catch (error) {
+      console.log('got error')
+      addToast('danger', `Error: Have a hard error, please contact admin`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("trying to handle submit")
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      console.log("not validate")
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    setValidated(true);
+
+    if (!form.checkValidity()) return;
+
+    setLoading(true);
+
+    try {
+      console.log('sup man')
+      const response = await fetch(`${config.API_BASE_URL}/${config.AMEND_ORDER_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: order_id,
+          amount: amount
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        addToast('success', `${result.message}}`);
+      } else {
+        addToast('danger', `${result.message}}`);
+      }
+    } catch (error) {
+      console.log('got error')
+      addToast('danger', `Error: Have a hard error, please contact admin`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection((prevDirection) => (prevDirection === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+
+    const sortedData = [...data].sort((a, b) => {
+      if (column === 'timestamp') {
+        // Special handling for timestamp
+        return sortDirection === 'asc'
+          ? new Date(a.timestamp) - new Date(b.timestamp)
+          : new Date(b.timestamp) - new Date(a.timestamp);
+      }
+
+      if (a[column] < b[column]) return sortDirection === 'asc' ? -1 : 1;
+      if (a[column] > b[column]) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    setData(sortedData);
+  };
 
   return (
     <>
-      <WidgetsDropdown className="mb-4" />
-      <CCard className="mb-4">
-        <CCardBody>
-          <CRow>
-            <CCol sm={5}>
-              <h4 id="traffic" className="card-title mb-0">
-                Traffic
-              </h4>
-              <div className="small text-body-secondary">January - July 2023</div>
-            </CCol>
-            <CCol sm={7} className="d-none d-md-block">
-              <CButton color="primary" className="float-end">
-                <CIcon icon={cilCloudDownload} />
-              </CButton>
-              <CButtonGroup className="float-end me-3">
-                {['Day', 'Month', 'Year'].map((value) => (
-                  <CButton
-                    color="outline-secondary"
-                    key={value}
-                    className="mx-0"
-                    active={value === 'Month'}
-                  >
-                    {value}
-                  </CButton>
-                ))}
-              </CButtonGroup>
-            </CCol>
-          </CRow>
-          <MainChart />
-        </CCardBody>
-        <CCardFooter>
-          <CRow
-            xs={{ cols: 1, gutter: 4 }}
-            sm={{ cols: 2 }}
-            lg={{ cols: 4 }}
-            xl={{ cols: 5 }}
-            className="mb-2 text-center"
+      <CModal
+        visible={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        aria-labelledby="LiveDemoExampleLabel"
+      >
+        <CModalHeader>
+          <CModalTitle id="LiveDemoExampleLabel">Modal title</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+        <CForm
+            noValidate
+            validated={validated}
           >
-            {progressExample.map((item, index, items) => (
-              <CCol
-                className={classNames({
-                  'd-none d-xl-block': index + 1 === items.length,
-                })}
-                key={index}
+            <div className="mb-3">
+              <CFormLabel htmlFor="company">Company</CFormLabel>
+              <CFormSelect
+                id="company"
+                name="company"
+                value={editDetails.company}
+                required
+                disabled
               >
-                <div className="text-body-secondary">{item.title}</div>
-                <div className="fw-semibold text-truncate">
-                  {item.value} ({item.percent}%)
-                </div>
-                <CProgress thin className="mt-2" color={item.color} value={item.percent} />
+                <option value="">Select a company</option>
+                {config.COMPANIES.map((company, index) => (
+                  <option key={index} value={company}>
+                    {company}
+                  </option>
+                ))}
+              </CFormSelect>
+              <CFormFeedback invalid>Please select a company.</CFormFeedback>
+            </div>
+            <div className="mb-3">
+              <CFormLabel htmlFor="action">Action</CFormLabel>
+              <CFormSelect
+                id="action"
+                name="action"
+                value={editDetails.action}
+                required
+                disabled
+              >
+                <option value="">Select an action</option>
+                <option value="buy">BUY</option>
+                <option value="sell">SELL</option>
+              </CFormSelect>
+              <CFormFeedback invalid>Please select an action.</CFormFeedback>
+            </div>
+            <div className="mb-3">
+              <CFormLabel htmlFor="amount">Amount</CFormLabel>
+              <CFormInput
+                type="number"
+                id="amount"
+                name="amount"
+                value={amountChanged}
+                onChange={(e) => setAmountChanged(e.target.value)}
+                placeholder="Enter the amount"
+                required
+              />
+              <CFormFeedback invalid>Please provide a valid amount.</CFormFeedback>
+            </div>
+          </CForm>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setShowEditModal(false)}>
+            Close
+          </CButton>
+          <CButton onClick={handleSubmit} type="submit" color="primary" disabled={loading}>
+              {loading ? <CSpinner size="sm" /> : 'Submit'}
+            </CButton>
+        </CModalFooter>
+      </CModal>
+      <CContainer>
+        <CCard>
+          <CCardBody>
+            <CRow>
+              <h3>Company: {accountName}</h3>
+            </CRow>
+            <CRow>
+              <CCol>
+                <h3>Cash Balance: {accountBalance}</h3>
               </CCol>
-            ))}
-          </CRow>
-        </CCardFooter>
-      </CCard>
-      <WidgetsBrand className="mb-4" withCharts />
-      <CRow>
-        <CCol xs>
-          <CCard className="mb-4">
-            <CCardHeader>Traffic {' & '} Sales</CCardHeader>
-            <CCardBody>
-              <CRow>
-                <CCol xs={12} md={6} xl={6}>
-                  <CRow>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-info py-1 px-3">
-                        <div className="text-body-secondary text-truncate small">New Clients</div>
-                        <div className="fs-5 fw-semibold">9,123</div>
-                      </div>
-                    </CCol>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-danger py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">
-                          Recurring Clients
-                        </div>
-                        <div className="fs-5 fw-semibold">22,643</div>
-                      </div>
-                    </CCol>
-                  </CRow>
-                  <hr className="mt-0" />
-                  {progressGroupExample1.map((item, index) => (
-                    <div className="progress-group mb-4" key={index}>
-                      <div className="progress-group-prepend">
-                        <span className="text-body-secondary small">{item.title}</span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="info" value={item.value1} />
-                        <CProgress thin color="danger" value={item.value2} />
-                      </div>
-                    </div>
-                  ))}
-                </CCol>
-                <CCol xs={12} md={6} xl={6}>
-                  <CRow>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">Pageviews</div>
-                        <div className="fs-5 fw-semibold">78,623</div>
-                      </div>
-                    </CCol>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">Organic</div>
-                        <div className="fs-5 fw-semibold">49,123</div>
-                      </div>
-                    </CCol>
-                  </CRow>
+              <CCol>
+                <h3>Carbon Credit: {carbonCredit}</h3>
+              </CCol>
+            </CRow>
 
-                  <hr className="mt-0" />
-
-                  {progressGroupExample2.map((item, index) => (
-                    <div className="progress-group mb-4" key={index}>
-                      <div className="progress-group-header">
-                        <CIcon className="me-2" icon={item.icon} size="lg" />
-                        <span>{item.title}</span>
-                        <span className="ms-auto fw-semibold">{item.value}%</span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="warning" value={item.value} />
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="mb-5"></div>
-
-                  {progressGroupExample3.map((item, index) => (
-                    <div className="progress-group" key={index}>
-                      <div className="progress-group-header">
-                        <CIcon className="me-2" icon={item.icon} size="lg" />
-                        <span>{item.title}</span>
-                        <span className="ms-auto fw-semibold">
-                          {item.value}{' '}
-                          <span className="text-body-secondary small">({item.percent}%)</span>
-                        </span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="success" value={item.percent} />
-                      </div>
-                    </div>
-                  ))}
-                </CCol>
-              </CRow>
-
-              <br />
-
-              <CTable align="middle" className="mb-0 border" hover responsive>
-                <CTableHead className="text-nowrap">
-                  <CTableRow>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      <CIcon icon={cilPeople} />
+            <CTable striped hover>
+              <CTableHead>
+                <CTableRow>
+                  {columns.map((col, index) => (
+                    <CTableHeaderCell key={index}>
+                      {col}
+                      <CButton
+                        size="sm"
+                        color="link"
+                        onClick={() => handleSort(col)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        {sortColumn === col ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                      </CButton>
                     </CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">User</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      Country
-                    </CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Usage</CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary text-center">
-                      Payment Method
-                    </CTableHeaderCell>
-                    <CTableHeaderCell className="bg-body-tertiary">Activity</CTableHeaderCell>
+                  ))}
+                  <CTableHeaderCell>
+                    Action
+                  </CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {data.map((row, rowIndex) => (
+                  <CTableRow
+                    key={rowIndex}
+                    className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
+                  >
+                    {columns.map((col, colIndex) => (
+                      <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
+                    ))}
+                    <CTableDataCell>
+                      <CButton
+                        size="sm"
+                        color="warning"
+                        onClick={() => onEditClick(row)}
+                      >
+                        EDIT
+                      </CButton>
+                      <CButton
+                        size="sm"
+                        color="danger"
+                        onClick={() => handleCancel(row.id)}
+                      >
+                        CANCEL
+                      </CButton>
+                      
+                    </CTableDataCell>
                   </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {tableExample.map((item, index) => (
-                    <CTableRow v-for="item in tableItems" key={index}>
-                      <CTableDataCell className="text-center">
-                        <CAvatar size="md" src={item.avatar.src} status={item.avatar.status} />
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div>{item.user.name}</div>
-                        <div className="small text-body-secondary text-nowrap">
-                          <span>{item.user.new ? 'New' : 'Recurring'}</span> | Registered:{' '}
-                          {item.user.registered}
-                        </div>
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">
-                        <CIcon size="xl" icon={item.country.flag} title={item.country.name} />
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div className="d-flex justify-content-between text-nowrap">
-                          <div className="fw-semibold">{item.usage.value}%</div>
-                          <div className="ms-3">
-                            <small className="text-body-secondary">{item.usage.period}</small>
-                          </div>
-                        </div>
-                        <CProgress thin color={item.usage.color} value={item.usage.value} />
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">
-                        <CIcon size="xl" icon={item.payment.icon} />
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <div className="small text-body-secondary text-nowrap">Last login</div>
-                        <div className="fw-semibold text-nowrap">{item.activity}</div>
-                      </CTableDataCell>
-                    </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-    </>
-  )
-}
+                ))}
+              </CTableBody>
+            </CTable>
+          </CCardBody>
+        </CCard>
+        <CToaster
+          placement="top-end"
+          style={{
+            marginTop: '20px',
+            marginRight: '20px',
+          }}
+        >
+          {toasts.map((toast) => (
+            <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
+              <CToastBody>
+                {toast.message}
+                <CToastClose onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
+              </CToastBody>
+            </CToast>
+          ))}
+        </CToaster>
+      </CContainer></>
+  );
+};
 
-export default Dashboard
+export default Table;
