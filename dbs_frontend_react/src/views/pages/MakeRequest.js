@@ -36,6 +36,7 @@ const MakeRequest = () => {
   const [currDate, setCurrDate] = useState('');
   const [curr_user_id, setCurrUserId] = useState('');
   const [receiverId, setReceiverId] = useState('');
+  
 
   const get_receiver_id = async (company_name) => {
     const response = await fetch(

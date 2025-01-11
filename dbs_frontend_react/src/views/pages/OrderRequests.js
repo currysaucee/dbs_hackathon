@@ -36,7 +36,8 @@ const OrderRequests = () => {
   const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
   const [carbonCredit, setCarbonCredit] = useState(config.MOCK_CARBON_CREDIT);
   const [sortDirection, setSortDirection] = useState('desc');
-  const [boolChecked, setBoolChecked] = useState([])
+  const [checked, setChecked] = useState([])
+    // setBoolChecked(Array(boolChecked.length).fill(0))
 
   const addToast = (color, message) => {
     const newToast = { id: Date.now(), color, message };
@@ -45,6 +46,28 @@ const OrderRequests = () => {
     setTimeout(() => {
       setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== newToast.id));
     }, 3000);
+  };
+
+  const handleCheckboxStatus = (isChecked, row) => {
+    console.log('Checkbox is now:', isChecked ? 'Checked' : 'Unchecked');
+    if (!isChecked) {
+        checked = checked.filter(item => item !== row);
+    } else {
+        if (!checked.includes(row)) {
+            checked.push(row);
+          }
+    }
+    // Call a different function and pass the isChecked value
+    AcceptorDenyTrade(isChecked, row);
+    
+  };
+
+  const AcceptorDenyTrade = (isChecked, row) => {
+    if (isChecked) {
+        handleAccept(row)
+    } else {
+        handleReject(row)
+    }
   };
 
   useEffect(() => {
@@ -84,7 +107,6 @@ const OrderRequests = () => {
     };
 
     fetchData();
-    setBoolChecked(new Array(boolChecked.length).fill(0))
 
     const socket = io(config.SOCKET_BASE_URL);
     socket.on('new_trade', (newTrade) => {
@@ -106,6 +128,7 @@ const OrderRequests = () => {
   }
 
   const handleAccept = async (row) => {
+
     console.log(row)
     try{
       const response = await fetch(`${config.API_BASE_URL}/${config.ACCEPT_ORDER_ENDPOINT}`, {
@@ -222,10 +245,7 @@ const OrderRequests = () => {
                   key={rowIndex}
                   className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
                 >
-                  <Checkbox>
-
-                  </Checkbox>
-                
+                  <Checkbox label="" onchange = {handleCheckboxStatus} row = {rowIndex}/>
                     
                   {columns.map((col, colIndex) => (
                     <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>

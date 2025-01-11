@@ -1,12 +1,17 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
 
-function Checkbox() {
-  const [isChecked, setIsChecked] = useState(false);
+function Checkbox({ label = "Default Checkbox", onChange, row }) {
+    const [isChecked, setIsChecked] = useState(false);
 
-  const handleCheckboxChange = (event) => {
-    setIsChecked(event.target.checked);
-  };
+    const handleCheckboxChange = (event) => {
+      const checkedStatus = event.target.checked;
+      setIsChecked(checkedStatus);
+      if (onChange) {
+        onChange(checkedStatus, row); 
+      }
+    };
 
   return (
     <div>
@@ -16,7 +21,7 @@ function Checkbox() {
           checked={isChecked}
           onChange={handleCheckboxChange}
         />
-        Check me
+        
       </label>
       <p>{isChecked ? 'Checked' : 'Unchecked'}</p>
     </div>
