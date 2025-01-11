@@ -29,7 +29,7 @@ def create_app():
         
         app.register_blueprint(auth_routes, url_prefix="/auth")
         app.register_blueprint(data_routes, url_prefix="/data")  # Register data_routes
-        db.create_all()  # Create database tables
+        # db.create_all()  # Create database tables
         
         init_socketio(app)
 

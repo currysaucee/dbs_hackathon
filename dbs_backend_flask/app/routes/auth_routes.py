@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import uuid
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token
-from ..models.Account import User
+from ..models.Account import Account
 from ..models.Token import Token
 from ..utils import hash_password, verify_password
 from .. import db
@@ -20,7 +20,7 @@ def register():
         return jsonify({"error": "Missing fields"}), 400
 
     hashed_password = hash_password(data["password"])
-    new_user = User(email=data["email"], password=hashed_password)
+    new_user = Account(email=data["email"], password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered successfully"}), 200
@@ -29,7 +29,7 @@ def register():
 def login():
     data = request.json
 
-    user = User.query.filter_by(email=data["email"]).first()
+    user = Account.query.filter_by(email=data["email"]).first()
     if not user or not verify_password(user.password, data["password"]):
         return jsonify({"error": "Invalid credentials"}), 401
 
@@ -63,7 +63,7 @@ def refresh():
 
         return jsonify({"error": "Refresh token expired. Please log in again."}), 401
 
-    user = User.query.get(token.user_id)
+    user = Account.query.get(token.user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
