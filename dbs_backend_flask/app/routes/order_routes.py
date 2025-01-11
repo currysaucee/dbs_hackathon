@@ -9,13 +9,13 @@ bp = Blueprint("orders_routes", __name__)
 @bp.route("/get_all_orders", methods=["GET"])
 def get_all_orders():
     orders = Order.query.all()
-    return jsonify(orders), 200
+    return jsonify({"message": orders}), 200
 
 @bp.route("/get_order_by_id/<string:id>", methods=["GET"])
 def get_order_by_id(id):
     order = Order.query.filter_by(id=id).first()
     if not order:
-        return jsonify({"error": "Order not found"}), 404
+        return jsonify({"message": "Order not found"}), 404
     return jsonify(order.serialize()), 200
 
 @bp.route("/create_order", methods=["POST"])
@@ -46,13 +46,13 @@ def create_order():
         db.session.add(new_order)
         db.session.commit()
 
-        return jsonify("Order successfully created."), 200
+        return jsonify({"message": "Order successfully created."}), 200
     
     except:
-        return jsonify("There was a problem creating the order."), 400
+        return jsonify({"message": "There was a problem creating the order."}), 400
 
 
-@bp.route("/deleteOrder/<string:id>", methods=["DELETE"])
+@bp.route("/delete_order/<string:id>", methods=["DELETE"])
 def delete_Order(id):
     order = Order.query.filter_by(id=id).first()
 
@@ -63,3 +63,17 @@ def delete_Order(id):
     db.session.commit()
 
     return jsonify({"message": "Order successfully deleted."}), 200
+    
+@bp.route("/update_order", methods=["PUT"])
+def update_order():
+    data = request.json
+    ref_order = Order.query.filter_by(data.get("id")).first()
+
+    try:
+        carbonQuantity = data.get("carbonQuantity")
+        ref_order.carbonQuantity = carbonQuantity
+        db.session.commit()
+        return jsonify({"message": "Order updated successfully."}), 200
+
+    except:
+        return jsonify({"message": "There was an issue updating your order."}), 400
