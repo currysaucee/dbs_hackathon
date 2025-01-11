@@ -16,6 +16,16 @@ import {
   CToaster,
   CRow,
   CCol,
+  CModal, 
+  CModalBody, 
+  CModalFooter, 
+  CModalHeader, 
+  CModalTitle,
+  CForm,
+  CFormLabel,
+  CFormSelect,
+  CFormFeedback,
+  CFormInput
 } from '@coreui/react';
 import { io } from 'socket.io-client'; 
 import config from '../../config';
@@ -26,6 +36,11 @@ const Table = () => {
   const [columns, setColumns] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [newRowId, setNewRowId] = useState(null); 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editDetails, setEditDetails] = useState([]);
+  const [validated, setValidated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [amountChanged, setAmountChanged] = useState();
   const [sortColumn, setSortColumn] = useState('timestamp');
   const [accountBalance, setAccountBalance] = useState(config.MOCK_ACCOUNT_BALANCE);
   const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
@@ -42,6 +57,13 @@ const Table = () => {
     }, 3000);
   };
 
+  const onEditClick = (row) => {
+    console.log(row)
+    setEditDetails(row)
+    setAmountChanged(row.price)
+    setShowEditModal(true);
+  }
+
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
@@ -49,9 +71,9 @@ const Table = () => {
         const result = await response.json();
 
         if (result && result.length > 0) {
-          setAccountBalance(result.account_balance)
-          setCarbonCredit(result.account_carbon_credit)
-          setAccountName(result.account_name)
+          setAccountBalance(result.cashBalance)
+          setCarbonCredit(result.carbonBalance)
+          setAccountName(result.name)
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -62,6 +84,22 @@ const Table = () => {
   })
 
   useEffect(() => {
+    const fetchMockData = async() => {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.MOCK_DATA_ENDPOINT}`)
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setColumns(Object.keys(result[0]));
+          
+          const sortedData = result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setData(sortedData); 
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
     const fetchData = async () => { 
       try {
         const response = await fetch(`${config.API_BASE_URL}/${config.GET_ORDERS_BY_ACCOUNT_ENDPOINT}`, {
@@ -83,6 +121,7 @@ const Table = () => {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        fetchMockData();
       }
     };
 
@@ -103,50 +142,73 @@ const Table = () => {
     };
   }, []);
 
-  const handleAccept = async (row) => {
-    console.log(row)
-    try{
-      const response = await fetch(`${config.API_BASE_URL}/${config.ACCEPT_ORDER_ENDPOINT}`, {
+  const handleCancel = async (e) => {
+    e.preventDefault();
+    console.log("trying to handle cancel")
+    try {
+      console.log('sup man')
+      const response = await fetch(`${config.API_BASE_URL}/${config.DELETE_ORDER_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: row.id,
+          id: order_id,
         }),
       });
+
       const result = await response.json();
       if (response.ok) {
-        addToast('success', 'Trade successfully accepted!');
-      } else {
-        addToast('danger', `Error accepting trade: ${result.error || 'Unknown error'}`);
-      }
+        addToast('success', `${result.message}}`);
+      } 
     } catch (error) {
-      console.log("got error")
-      addToast('danger', `Error accepting trade: Please contact admin for this`);
+      console.log('got error')
+      addToast('danger', `Error: Have a hard error, please contact admin`);
+    } finally {
+      setLoading(false);
     }
   }
 
-  const handleReject = async (row) => {
-    console.log(row)
-    try{
-      const response = await fetch(`${config.API_BASE_URL}/${config.REJECT_ORDER_ENDPOINT}`, {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("trying to handle submit")
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      console.log("not validate")
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    setValidated(true);
+
+    if (!form.checkValidity()) return;
+
+    setLoading(true);
+
+    try {
+      console.log('sup man')
+      const response = await fetch(`${config.API_BASE_URL}/${config.AMEND_ORDER_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: row.id,
+          id: order_id,
+          amount: amount
         }),
       });
+
       const result = await response.json();
       if (response.ok) {
-        addToast('success', 'Trade successfully rejected!');
+        addToast('success', `${result.message}}`);
       } else {
-        addToast('danger', `Error rejecting trade: ${result.error || 'Unknown error'}`);
+        addToast('danger', `${result.message}}`);
       }
     } catch (error) {
-      addToast('danger', `Error rejecting trade: Please contact admin for this`);
+      console.log('got error')
+      addToast('danger', `Error: Have a hard error, please contact admin`);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -174,90 +236,162 @@ const Table = () => {
   };
 
   return (
-    <CContainer>
-      <CCard>
-        <CCardBody>
-          <CRow>
-            <h3>Company: {accountName}</h3>
-          </CRow>
-          <CRow>
-            <CCol>
-              <h3>Balance: {accountBalance}</h3>
-            </CCol>
-            <CCol>
-              <h3>Carbon Credit: {carbonCredit}</h3>
-            </CCol>
-          </CRow>
-            
-          <CTable striped hover>
-            <CTableHead>
-              <CTableRow>
-                {columns.map((col, index) => (
-                  <CTableHeaderCell key={index}>
-                    {col}
-                    <CButton
-                      size="sm"
-                      color="link"
-                      onClick={() => handleSort(col)}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      {sortColumn === col ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-                    </CButton>
-                  </CTableHeaderCell>
-                ))}
-                <CTableHeaderCell>
-                  Action
-                </CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {data.map((row, rowIndex) => (
-                <CTableRow
-                  key={rowIndex}
-                  className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
-                >
-                  {columns.map((col, colIndex) => (
-                    <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
-                  ))}
-                    <CTableDataCell>
-                    <CButton
-                      size="sm"
-                      color="success"
-                      onClick={() => handleAccept(row)}
-                      >
-                    ACCEPT
-                    </CButton>
-                    <CButton
-                      size="sm"
-                      color="danger"
-                      onClick={() => handleReject(row)}
-                    >
-                    REJECT
-                    </CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
-      <CToaster
-        placement="top-end"
-        style={{
-          marginTop: '20px',
-          marginRight: '20px',
-        }}
+    <>
+      <CModal
+        visible={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        aria-labelledby="LiveDemoExampleLabel"
       >
-        {toasts.map((toast) => (
-          <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
-            <CToastBody>
-              {toast.message}
-              <CToastClose onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
-            </CToastBody>
-          </CToast>
-        ))}
-      </CToaster>
-    </CContainer>
+        <CModalHeader>
+          <CModalTitle id="LiveDemoExampleLabel">Modal title</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+        <CForm
+            noValidate
+            validated={validated}
+          >
+            <div className="mb-3">
+              <CFormLabel htmlFor="company">Company</CFormLabel>
+              <CFormSelect
+                id="company"
+                name="company"
+                value={editDetails.company}
+                required
+                disabled
+              >
+                <option value="">Select a company</option>
+                {config.COMPANIES.map((company, index) => (
+                  <option key={index} value={company}>
+                    {company}
+                  </option>
+                ))}
+              </CFormSelect>
+              <CFormFeedback invalid>Please select a company.</CFormFeedback>
+            </div>
+            <div className="mb-3">
+              <CFormLabel htmlFor="action">Action</CFormLabel>
+              <CFormSelect
+                id="action"
+                name="action"
+                value={editDetails.action}
+                required
+                disabled
+              >
+                <option value="">Select an action</option>
+                <option value="buy">BUY</option>
+                <option value="sell">SELL</option>
+              </CFormSelect>
+              <CFormFeedback invalid>Please select an action.</CFormFeedback>
+            </div>
+            <div className="mb-3">
+              <CFormLabel htmlFor="amount">Amount</CFormLabel>
+              <CFormInput
+                type="number"
+                id="amount"
+                name="amount"
+                value={amountChanged}
+                onChange={(e) => setAmountChanged(e.target.value)}
+                placeholder="Enter the amount"
+                required
+              />
+              <CFormFeedback invalid>Please provide a valid amount.</CFormFeedback>
+            </div>
+          </CForm>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setShowEditModal(false)}>
+            Close
+          </CButton>
+          <CButton onClick={handleSubmit} type="submit" color="primary" disabled={loading}>
+              {loading ? <CSpinner size="sm" /> : 'Submit'}
+            </CButton>
+        </CModalFooter>
+      </CModal>
+      <CContainer>
+        <CCard>
+          <CCardBody>
+            <CRow>
+              <h3>Company: {accountName}</h3>
+            </CRow>
+            <CRow>
+              <CCol>
+                <h3>Cash Balance: {accountBalance}</h3>
+              </CCol>
+              <CCol>
+                <h3>Carbon Credit: {carbonCredit}</h3>
+              </CCol>
+            </CRow>
+
+            <CTable striped hover>
+              <CTableHead>
+                <CTableRow>
+                  {columns.map((col, index) => (
+                    <CTableHeaderCell key={index}>
+                      {col}
+                      <CButton
+                        size="sm"
+                        color="link"
+                        onClick={() => handleSort(col)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        {sortColumn === col ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                      </CButton>
+                    </CTableHeaderCell>
+                  ))}
+                  <CTableHeaderCell>
+                    Action
+                  </CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {data.map((row, rowIndex) => (
+                  <CTableRow
+                    key={rowIndex}
+                    className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
+                  >
+                    {columns.map((col, colIndex) => (
+                      <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
+                    ))}
+                    <CTableDataCell>
+                      <CButton
+                        size="sm"
+                        color="warning"
+                        onClick={() => onEditClick(row)}
+                      >
+                        EDIT
+                      </CButton>
+                      <CButton
+                        size="sm"
+                        color="danger"
+                        onClick={() => handleCancel(row.id)}
+                      >
+                        CANCEL
+                      </CButton>
+                      
+                    </CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          </CCardBody>
+        </CCard>
+        <CToaster
+          placement="top-end"
+          style={{
+            marginTop: '20px',
+            marginRight: '20px',
+          }}
+        >
+          {toasts.map((toast) => (
+            <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
+              <CToastBody>
+                {toast.message}
+                <CToastClose onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
+              </CToastBody>
+            </CToast>
+          ))}
+        </CToaster>
+      </CContainer></>
   );
 };
 

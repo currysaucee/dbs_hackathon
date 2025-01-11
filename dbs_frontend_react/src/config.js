@@ -8,6 +8,8 @@ const config = {
   LOGOUT_ENDPOINT: "auth/logout",
   REFRESH_ENDPOINT: "auth/refresh",
   NEW_TRADE_ENDPOINT: "data/trade",
+  AMEND_ORDER_ENDPOINT: "data/update_order",
+  DELETE_ORDER_ENDPOINT: "data/delete_order",
   MOCK_DATA_ENDPOINT: "data/get_data",
   ACCEPT_ORDER_ENDPOINT: "trade/reject",
   REJECT_ORDER_ENDPOINT: "trade/accept",
