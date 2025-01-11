@@ -1,4 +1,5 @@
 from app import db
+from flask import jsonify, request
 
 class Account(db.Model):
     __tablename__ = 'accounts'
@@ -8,4 +9,3 @@ class Account(db.Model):
     cashBalance = db.Column(db.Float, nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    
