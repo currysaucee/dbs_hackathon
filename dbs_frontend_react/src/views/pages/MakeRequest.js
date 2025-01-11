@@ -15,6 +15,8 @@ import {
   CToaster,
   CContainer,
   CFormFeedback,
+  CCardText,
+  CCallout,
 } from '@coreui/react';
 import config from '../../config'; 
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +27,7 @@ const MakeRequest = () => {
     company: '',
     action: '',
     quantity: '',
+    reqreason: '',
   });
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -87,7 +90,9 @@ const MakeRequest = () => {
   return (
     <CContainer>
       <CCard className="mb-4">
-        <CCardHeader>Make a Trade</CCardHeader>
+        <CCardHeader>Make a Token Request</CCardHeader>
+        <CCallout>Note that every credit costs $10</CCallout>
+
         <CCardBody>
           <CForm noValidate validated={validated} onSubmit={handleSubmit}>
             <div className="mb-3">
@@ -135,6 +140,19 @@ const MakeRequest = () => {
                 required
               />
               <CFormFeedback invalid>Please provide a valid quantity.</CFormFeedback>
+            </div>
+            <div className="mb-3">
+              <CFormLabel htmlFor="reqreason">Request Reason</CFormLabel>
+              <CFormInput
+                type="string"
+                id="reqreason"
+                name="reqreason"
+                value={formData.reqreason}
+                onChange={handleChange}
+                placeholder="Enter the request reason"
+                required
+              />
+              <CFormFeedback invalid>Please provide a valid reason. Must be text.</CFormFeedback>
             </div>
             <CButton type="submit" color="primary" disabled={loading}>
               {loading ? <CSpinner size="sm" /> : 'Submit'}

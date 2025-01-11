@@ -1,4 +1,6 @@
+/* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
+import { CFormCheck } from '@coreui/react'
 import {
   CButton,
   CCard,
@@ -15,9 +17,18 @@ import {
   CToaster,
   CContainer,
   CFormFeedback,
+  CCardText,
+  CCallout,
+  CTable,
+  CTableHead,
+  CTableRow,
+  CTableHeaderCell,
+  CTableBody,
+  CTableDataCell,
 } from '@coreui/react';
 import config from '../../config'; 
 import { useNavigate } from 'react-router-dom';
+import Buttons from '../template_examples/buttons/buttons/Buttons';
 
 const OrderRequests = () => {
   const navigate = useNavigate();
@@ -25,11 +36,13 @@ const OrderRequests = () => {
     company: '',
     action: '',
     quantity: '',
+    reqreason: '',
   });
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [validated, setValidated] = useState(false);
   const [currDate, setCurrDate] = useState('')
+  const [columns, setColumns] = useState([])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,60 +100,12 @@ const OrderRequests = () => {
   return (
     <CContainer>
       <CCard className="mb-4">
-        <CCardHeader>Make a Trade</CCardHeader>
-        <CCardBody>
-          <CForm noValidate validated={validated} onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <CFormLabel htmlFor="company">Company</CFormLabel>
-              <CFormSelect
-                id="company"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select a company</option>
-                {config.COMPANIES.map((company, index) => (
-                  <option key={index} value={company}>
-                    {company}
-                  </option>
-                ))}
-              </CFormSelect>
-              <CFormFeedback invalid>Please select a company.</CFormFeedback>
-            </div>
-            <div className="mb-3">
-              <CFormLabel htmlFor="action">Action</CFormLabel>
-              <CFormSelect
-                id="action"
-                name="action"
-                value={formData.action}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select an action</option>
-                <option value="buy">BUY</option>
-                <option value="sell">SELL</option>
-              </CFormSelect>
-              <CFormFeedback invalid>Please select an action.</CFormFeedback> 
-            </div>
-            <div className="mb-3">
-              <CFormLabel htmlFor="quantity">Quantity</CFormLabel>
-              <CFormInput
-                type="number"
-                id="quantity"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                placeholder="Enter the quantity"
-                required
-              />
-              <CFormFeedback invalid>Please provide a valid quantity.</CFormFeedback>
-            </div>
-            <CButton type="submit" color="primary" disabled={loading}>
-              {loading ? <CSpinner size="sm" /> : 'Submit'}
-            </CButton>
-          </CForm>
-        </CCardBody>
+        <CCardHeader>Your outstanding requests from other companies</CCardHeader>
+        <CCallout>Note that every credit costs $10</CCallout>
+        <CButton color="success" variant="outline">Accept</CButton>
+        <CButton color="danger" variant="outline">Reject</CButton>
+        <>
+        </>
       </CCard>
 
       <CToaster

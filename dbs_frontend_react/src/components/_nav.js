@@ -19,6 +19,12 @@ import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 // ADD HERE FOR THE ITEMS TO SHOW IN NAVBAR
 const _nav = [
   {
+    component: CNavItem,
+    name: 'OrderRequests',
+    to: '/OrderRequests',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  },
+  {
     component: CNavTitle,
     name: 'DBS Main Menu Hackathon',
   },

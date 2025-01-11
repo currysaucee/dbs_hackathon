@@ -5,6 +5,8 @@ const Dashboard = React.lazy(() => import('./views/pages/Dashboard'))
 const Table = React.lazy(() => import('./views/pages/Table'))
 const Order = React.lazy(() => import('./views/pages/Order'))
 const MakeRequest = React.lazy(() => import('./views/pages/MakeRequest'))
+const OrderRequests = React.lazy(() => import('./views/pages/OrderRequests'))
+
 
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
@@ -63,6 +65,7 @@ const routes = [
   { path: '/table', name: 'Table', element: Table },
   { path: '/order', name: 'Order', element: Order },
   { path: '/MakeRequest', name: 'MakeRequest', element: MakeRequest },
+  { path: '/OrderRequests', name: 'OrderRequests', element: OrderRequests },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
