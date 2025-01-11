@@ -67,7 +67,7 @@ def delete_account():
     id = data.id
     try:
         account = Account.query.filter_by(id=id).first()
-        db.session.delete()
+        db.session.delete(account)
         db.session.commit()
         return jsonify({'message': 'User deleted successfully'}), 200
     except:
