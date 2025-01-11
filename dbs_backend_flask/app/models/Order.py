@@ -14,4 +14,17 @@ class Order(db.Model):
     requestType = db.Column(db.String(120), nullable=False)
     requestReason = db.Column(db.String(120), nullable=True)
     rejectReason = db.Column(db.String(120), nullable=True)
+
+    def __init__(self, requestorId, receiverId, alertId, carbonUnitPrice, carbonQuantity, status, createdAt, updatedAt, requestType, requestReason, rejectReason):
+        self.requestorId = requestorId
+        self.receiverId = receiverId
+        self.alertId = alertId
+        self.carbonUnitPrice = carbonUnitPrice
+        self.carbonQuantity = carbonQuantity
+        self.status = status
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.requestType = requestType
+        self.requestReason = requestReason
+        self.rejectReason = rejectReason
     
