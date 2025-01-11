@@ -55,7 +55,7 @@ const MakeRequest = () => {
     if (!form.checkValidity()) return;
 
     setLoading(true);
-
+    // formData[requesterId] localStorage.
     try {
       const response = await fetch(`${config.API_BASE_URL}/${config.NEW_TRADE_ENDPOINT}`, {
         method: 'POST',

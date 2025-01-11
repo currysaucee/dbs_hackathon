@@ -23,6 +23,7 @@ import {
 } from '@coreui/react';
 import { io } from 'socket.io-client'; 
 import config from '../../config';
+import Checkbox from '../../components/checkbox';
 
 const OrderRequests = () => {
   console.log("Table page is loaded");
@@ -99,6 +100,10 @@ const OrderRequests = () => {
       socket.disconnect();
     };
   }, []);
+  const onChangeCheckbox = (index) => {
+    boolChecked[index] = True
+
+  }
 
   const handleAccept = async (row) => {
     console.log(row)
@@ -217,8 +222,10 @@ const OrderRequests = () => {
                   key={rowIndex}
                   className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
                 >
-                  <CFormCheck id="defaultCheck1" label="" />
+                  <Checkbox>
 
+                  </Checkbox>
+                
                     
                   {columns.map((col, colIndex) => (
                     <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
