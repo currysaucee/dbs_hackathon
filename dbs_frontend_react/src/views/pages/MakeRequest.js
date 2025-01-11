@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
 import {
   CButton,
@@ -33,12 +34,50 @@ const MakeRequest = () => {
   const [toasts, setToasts] = useState([]);
   const [validated, setValidated] = useState(false);
   const [currDate, setCurrDate] = useState('')
+  const [curr_user_id, setCurrUserId] = useState('')
+  const [receiverId, setReceiverId] = useState('')
+
+  const get_receiver_id = async (company_name) => {
+    const response = await fetch(`${config.API_BASE_URL}/${config.GET_ALL_ACCOUNTS}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+    data = response.json()
+    for (const key in data) {
+    if (data[key]['name'] === company_name) {
+        return data[key]['id'];
+    }
+
+  }
+
+  const get_requestor_id = async () => {
+    const response = await fetch(`${config.API_BASE_URL}/${config.ACCOUNT_ENDPOINT}`);
+        const result = await response.json();
+        const requestor_comp_name = result['name']
+    return get_receiver_id(requestor_comp_name)
+  }
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
+//   new_order = Order(
+//     requestor_id = data.get("requestorId"),
+//     receiver_id = data.get("receiverId"),
+//     alert_id = new_alert.id,
+//     carbonQuantity = data.get("carbonQuantity"),
+//     status = "Active",
+//     createdAt = datetime.now(),
+//     updatedAt = None,
+//     requestType = data.get("requestType"),
+//     requestReason = data.get("requestReason"),
+//     rejectReason = data.get("rejectReason") | None
+// )
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("trying to handle submit")
@@ -53,8 +92,13 @@ const MakeRequest = () => {
     setValidated(true);
 
     if (!form.checkValidity()) return;
-
+    
     setLoading(true);
+    formData[requestorId] = get_requestor_id()
+    formData[receiver_id] = get_receiver_id(e.company)
+    formData[carbonQuantity] = e.carbonQuantity
+    formData[requestType] = e.requestType
+    formData[requestReason] = e.requestReason
     // formData[requesterId] localStorage.
     try {
       const response = await fetch(`${config.API_BASE_URL}/${config.NEW_TRADE_ENDPOINT}`, {
