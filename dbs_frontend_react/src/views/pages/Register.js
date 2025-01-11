@@ -18,6 +18,11 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import config from '../../config'; 
+import { useNavigate } from 'react-router-dom';
+
+const goToLogin = () => {
+  navigate('/Login');
+}
 
 const Register = () => {
   const [toasts, setToasts] = useState([]);
@@ -39,6 +44,7 @@ const Register = () => {
       });
   
       const data = await response.json();
+      
       if (response.ok) {
         addToast('success', 'Successfully registered')
       } else {
@@ -97,7 +103,7 @@ const Register = () => {
                     />
                   </CInputGroup>
                   <div className="d-grid">
-                    <CButton type="submit" color="success">Create Account</CButton>
+                    <CButton type="submit" color="success" onClick={() => goToLogin()}>Create Account</CButton>
                   </div>
                 </CForm>
               </CCardBody>
@@ -125,4 +131,4 @@ const Register = () => {
   )
 }
 
-export default Register
+export default Register;
