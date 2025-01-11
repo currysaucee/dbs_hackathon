@@ -1,8 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 from flask import Blueprint, request, jsonify
 from ..models.Trade import Trade  
 from ..models.Account import Account
+from ..models.Order import Order
+from ..models.Alert import Alert
 from .. import db
 from .websocket import socketio  
 
@@ -12,13 +14,12 @@ bp = Blueprint("data_routes", __name__)
 
 @bp.route("/get_all_accounts", methods=["GET"])
 def get_all_accounts():
-    print("hi i got hit")
     accounts = Account.query.all()
     return jsonify(accounts), 200
 
-@bp.route("/get_account_by_id", methods=["GET"])
-def get_account_by_id():
-    account = Account.query.filter_by(id=request.args.get("id")).first()
+@bp.route("/get_account_by_id/<string:id>", methods=["GET"])
+def get_account_by_id(id):
+    account = Account.query.filter_by(id=id).first()
     if not account:
         return jsonify({"error": "Account not found"}), 404
     return jsonify(account.serialize()), 200
@@ -72,6 +73,69 @@ def delete_account():
         return jsonify({'message': 'User deleted successfully'}), 200
     except:
         return jsonify({'error': 'There was an issue deleting the user.'}), 400
+    
+@bp.route("/get_all_orders", methods=["GET"])
+def get_all_orders():
+    orders = Order.query.all()
+    return jsonify(orders), 200
+
+@bp.route("/get_order_by_id/<string:id>", methods=["GET"])
+def get_order_by_id(id):
+    order = Order.query.filter_by(id=id).first()
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+    return jsonify(order.serialize()), 200
+
+@bp.route("/create_order", methods=["POST"])
+def create_order():
+    data = request.json
+
+    try:
+        new_alert = Alert(
+            accountId = data.get("receiverId"),
+            alertDateTime = datetime.now() + timedelta(days=10),
+            alertText = f"You have yet to approve {data.get("requestorId")}'s request to {data.get("requestType")} {data.get("carbon_quantity")} units of carbon.",
+            alertStatus = "Scheduled"
+        )
+        
+        new_order = Order(
+            requestor_id = data.get("requestorId"),
+            receiver_id = data.get("receiverId"),
+            alert_id = new_alert.id,
+            carbonQuantity = data.get("carbonQuantity"),
+            status = "Active",
+            createdAt = datetime.now(),
+            updatedAt = None,
+            requestType = data.get("requestType"),
+            requestReason = data.get("requestReason"),
+            rejectReason = data.get("rejectReason")
+        )
+
+        db.session.add(new_order)
+        db.session.commit()
+
+        return jsonify("Order successfully created."), 200
+    
+    except:
+        return jsonify("There was a problem creating the order."), 400
+
+
+
+# id = db.Column(db.Integer, primary_key=True)
+#     requestorId = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)
+#     receiverId = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)
+#     alertId = db.Column(db.Integer, db.ForeignKey('alerts.id'), nullable=True)
+#     carbonUnitPrice = db.Column(db.Float, nullable=False)
+#     carbonQuantity = db.Column(db.Float, nullable=False)
+#     status = db.Column(db.String(120), nullable=False)
+#     createdAt = db.Column(db.DateTime, nullable=False)
+#     updatedAt = db.Column(db.DateTime, nullable=False)
+#     requestType = db.Column(db.String(120), nullable=False)
+#     requestReason = db.Column(db.String(120), nullable=True)
+#     rejectReason = db.Column(db.String(120), nullable=True)
+
+
+
         
 
 
