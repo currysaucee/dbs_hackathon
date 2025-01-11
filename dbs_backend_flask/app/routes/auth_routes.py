@@ -23,23 +23,23 @@ def register():
     new_user = Account(email=data["email"], password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"message": "User registered successfully"}), 200
+    return jsonify({"message": "Account registered successfully"}), 200
 
 @bp.route("/login", methods=["POST"])
 def login():
     data = request.json
 
-    user = Account.query.filter_by(email=data["email"]).first()
-    if not user or not verify_password(user.password, data["password"]):
+    account = Account.query.filter_by(email=data["email"]).first()
+    if not account or not verify_password(account.password, data["password"]):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity={"id": user.id, "email": user.email}, expires_delta=Config.JWT_ACCESS_TOKEN_EXPIRES)
-    refresh_token = create_refresh_token(identity={"id": user.id, "email": user.email}, expires_delta=Config.JWT_REFRESH_TOKEN_EXPIRES)
+    access_token = create_access_token(identity={"id": account.id, "email": account.email}, expires_delta=Config.JWT_ACCESS_TOKEN_EXPIRES)
+    refresh_token = create_refresh_token(identity={"id": account.id, "email": account.email}, expires_delta=Config.JWT_REFRESH_TOKEN_EXPIRES)
 
-    Token.query.filter_by(user_id=user.id).delete()
+    Token.query.filter_by(user_id=account.id).delete()
 
     token = Token(
-        user_id=user.id,
+        user_id=account.id,
         refresh_token=refresh_token,
         issued_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + Config.JWT_REFRESH_TOKEN_EXPIRES,
@@ -47,7 +47,7 @@ def login():
     db.session.add(token)
     db.session.commit()
 
-    return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+    return jsonify(access_token=access_token, refresh_token=refresh_token, id=Account.id), 200
 
 @bp.route("/refresh", methods=["POST"])
 def refresh():
@@ -63,12 +63,12 @@ def refresh():
 
         return jsonify({"error": "Refresh token expired. Please log in again."}), 401
 
-    user = Account.query.get(token.user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    account = Account.query.get(token.user_id)
+    if not account:
+        return jsonify({"error": "Account not found"}), 404
 
     access_token = create_access_token(
-        identity={"id": user.id, "email": user.email}, 
+        identity={"id": account.id, "email": account.email}, 
         expires_delta=timedelta(seconds=10)
     )
 
