@@ -47,7 +47,7 @@ def login():
     db.session.add(token)
     db.session.commit()
 
-    return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+    return jsonify(access_token=access_token, refresh_token=refresh_token, id=Account.id), 200
 
 @bp.route("/refresh", methods=["POST"])
 def refresh():
