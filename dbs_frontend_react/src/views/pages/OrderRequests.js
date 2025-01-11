@@ -19,16 +19,17 @@ import {
 import config from '../../config'; 
 import { useNavigate } from 'react-router-dom';
 
-const Order = () => {
+const OrderRequests = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     company: '',
     action: '',
-    amount: '',
+    quantity: '',
   });
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [validated, setValidated] = useState(false);
+  const [currDate, setCurrDate] = useState('')
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,11 +89,7 @@ const Order = () => {
       <CCard className="mb-4">
         <CCardHeader>Make a Trade</CCardHeader>
         <CCardBody>
-          <CForm
-            noValidate
-            validated={validated}
-            onSubmit={handleSubmit}
-          >
+          <CForm noValidate validated={validated} onSubmit={handleSubmit}>
             <div className="mb-3">
               <CFormLabel htmlFor="company">Company</CFormLabel>
               <CFormSelect
@@ -127,17 +124,17 @@ const Order = () => {
               <CFormFeedback invalid>Please select an action.</CFormFeedback> 
             </div>
             <div className="mb-3">
-              <CFormLabel htmlFor="amount">Amount</CFormLabel>
+              <CFormLabel htmlFor="quantity">Quantity</CFormLabel>
               <CFormInput
                 type="number"
-                id="amount"
-                name="amount"
-                value={formData.amount}
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
                 onChange={handleChange}
-                placeholder="Enter the amount"
+                placeholder="Enter the quantity"
                 required
               />
-              <CFormFeedback invalid>Please provide a valid amount.</CFormFeedback>
+              <CFormFeedback invalid>Please provide a valid quantity.</CFormFeedback>
             </div>
             <CButton type="submit" color="primary" disabled={loading}>
               {loading ? <CSpinner size="sm" /> : 'Submit'}
@@ -157,7 +154,9 @@ const Order = () => {
           <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
             <CToastBody>
               {toast.message}
-              <CToastClose onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
+              <CToastClose
+                onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+              />
             </CToastBody>
           </CToast>
         ))}
@@ -166,4 +165,4 @@ const Order = () => {
   );
 };
 
-export default Order;
+export default OrderRequests;
