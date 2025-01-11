@@ -44,7 +44,7 @@ def create_order():
             updatedAt = None,
             requestType = data.get("requestType"),
             requestReason = data.get("requestReason"),
-            rejectReason = data.get("rejectReason")
+            rejectReason = data.get("rejectReason") | None
         )
 
         db.session.add(new_order)
