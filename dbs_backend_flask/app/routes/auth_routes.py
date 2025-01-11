@@ -20,7 +20,7 @@ def register():
         return jsonify({"error": "Missing fields"}), 400
 
     hashed_password = hash_password(data["password"])
-    new_user = Account(email=data["email"], password=hashed_password)
+    new_user = Account(email=data["email"], password=hashed_password, name=data["name"], carbonBalance=data["carbonBalance"], cashBalance=data["cashBalance"])
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "Account registered successfully"}), 200
