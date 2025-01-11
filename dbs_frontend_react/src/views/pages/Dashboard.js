@@ -31,6 +31,7 @@ const Table = () => {
   const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
   const [carbonCredit, setCarbonCredit] = useState(config.MOCK_CARBON_CREDIT);
   const [sortDirection, setSortDirection] = useState('desc');
+  const company_id = localStorage.getItem('company_id');
 
   const addToast = (color, message) => {
     const newToast = { id: Date.now(), color, message };
@@ -61,9 +62,17 @@ const Table = () => {
   })
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async () => { 
       try {
-        const response = await fetch(`${config.API_BASE_URL}/${config.MOCK_DATA_ENDPOINT}`);
+        const response = await fetch(`${config.API_BASE_URL}/${config.GET_ORDERS_BY_ACCOUNT_ENDPOINT}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: company_id,
+          }),        
+        });
         const result = await response.json();
 
         if (result && result.length > 0) {

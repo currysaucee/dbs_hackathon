@@ -11,6 +11,7 @@ const config = {
   MOCK_DATA_ENDPOINT: "data/get_data",
   ACCEPT_ORDER_ENDPOINT: "trade/reject",
   REJECT_ORDER_ENDPOINT: "trade/accept",
+  GET_MY_TRADES_ENDPOINT: "data/get_orders_by_account_id",
   COMPANIES: ['Apple', 'Amazon', 'Tesla', 'Google', 'Microsoft'],
   MOCK_ACCOUNT_BALANCE: 1000000,
   MOCK_CARBON_CREDIT: 1000,

@@ -41,7 +41,8 @@ const Login = () => {
       if (response.ok) {
         console.log('Login successful:', data);
         localStorage.setItem('access_token', data.access_token); 
-        localStorage.setItem('refresh_token', data.refresh_token); 
+        localStorage.setItem('refresh_token', data.refresh_token);
+        localStorage.setItem('company_id', data.id);
 
         navigate('/dashboard'); 
       } else {
