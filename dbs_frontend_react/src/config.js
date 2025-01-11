@@ -9,8 +9,12 @@ const config = {
   REFRESH_ENDPOINT: "auth/refresh",
   NEW_TRADE_ENDPOINT: "data/trade",
   MOCK_DATA_ENDPOINT: "data/get_data",
+  ACCEPT_ORDER_ENDPOINT: "trade/reject",
+  REJECT_ORDER_ENDPOINT: "trade/accept",
   COMPANIES: ['Apple', 'Amazon', 'Tesla', 'Google', 'Microsoft'],
-  MOCK_ACCOUNT_BALANCE: 1000000
+  MOCK_ACCOUNT_BALANCE: 1000000,
+  MOCK_CARBON_CREDIT: 1000,
+  MOCK_ACCOUNT_NAME: "Aloysius's Company"
 };
   
   export default config;
