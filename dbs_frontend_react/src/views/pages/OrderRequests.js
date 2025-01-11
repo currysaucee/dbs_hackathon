@@ -1,92 +1,38 @@
 /* eslint-disable prettier/prettier */
-import React, { useState } from 'react';
-import { CFormCheck } from '@coreui/react'
+import React, { useState, useEffect } from 'react';
 import {
-  CButton,
+  CContainer,
   CCard,
   CCardBody,
-  CCardHeader,
-  CForm,
-  CFormInput,
-  CFormLabel,
-  CFormSelect,
-  CSpinner,
-  CToast,
-  CToastBody,
-  CToastClose,
-  CToaster,
-  CContainer,
-  CFormFeedback,
-  CCardText,
-  CCallout,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
+  CButton,
+  CToast,
+  CToastBody,
+  CToastClose,
+  CToaster,
+  CRow,
+  CCol,
+  CFormCheck
 } from '@coreui/react';
-import config from '../../config'; 
-import { useNavigate } from 'react-router-dom';
-import Buttons from '../template_examples/buttons/buttons/Buttons';
+import { io } from 'socket.io-client'; 
+import config from '../../config';
 
 const OrderRequests = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    company: '',
-    action: '',
-    quantity: '',
-    reqreason: '',
-  });
-  const [loading, setLoading] = useState(false);
+  console.log("Table page is loaded");
+  const [data, setData] = useState([]);
+  const [columns, setColumns] = useState([]);
   const [toasts, setToasts] = useState([]);
-  const [validated, setValidated] = useState(false);
-  const [currDate, setCurrDate] = useState('')
-  const [columns, setColumns] = useState([])
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("trying to handle submit")
-    const form = e.currentTarget;
-    console.log(form)
-    if (form.checkValidity() === false) {
-      console.log("not validate")
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    setValidated(true);
-
-    if (!form.checkValidity()) return;
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${config.API_BASE_URL}/${config.NEW_TRADE_ENDPOINT}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        addToast('success', 'Trade successfully made!');
-      } else {
-        addToast('danger', `Failed to make trade: ${result.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      addToast('danger', `Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [newRowId, setNewRowId] = useState(null); 
+  const [sortColumn, setSortColumn] = useState('timestamp');
+  const [accountBalance, setAccountBalance] = useState(config.MOCK_ACCOUNT_BALANCE);
+  const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
+  const [carbonCredit, setCarbonCredit] = useState(config.MOCK_CARBON_CREDIT);
+  const [sortDirection, setSortDirection] = useState('desc');
 
   const addToast = (color, message) => {
     const newToast = { id: Date.now(), color, message };
@@ -97,17 +43,188 @@ const OrderRequests = () => {
     }, 3000);
   };
 
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.ACCOUNT_ENDPOINT}`);
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setAccountBalance(result.account_balance)
+          setCarbonCredit(result.account_carbon_credit)
+          setAccountName(result.account_name)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchCompanyDetails();
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.MOCK_DATA_ENDPOINT}`);
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setColumns(Object.keys(result[0]));
+          
+          const sortedData = result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setData(sortedData); 
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+
+    const socket = io(config.SOCKET_BASE_URL);
+    socket.on('new_trade', (newTrade) => {
+      console.log('New trade received:', newTrade);
+      setNewRowId(newTrade.uuid || newTrade.id); 
+      setData((prevData) => {
+        const updatedData = [newTrade, ...prevData];
+        return updatedData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const handleAccept = async (row) => {
+    console.log(row)
+    try{
+      const response = await fetch(`${config.API_BASE_URL}/${config.ACCEPT_ORDER_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: row.id,
+        }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        addToast('success', 'Trade successfully accepted!');
+      } else {
+        addToast('danger', `Error accepting trade: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.log("got error")
+      addToast('danger', `Error accepting trade: Please contact admin for this`);
+    }
+  }
+
+  const handleReject = async (row) => {
+    console.log(row)
+    try{
+      const response = await fetch(`${config.API_BASE_URL}/${config.REJECT_ORDER_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: row.id,
+        }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        addToast('success', 'Trade successfully rejected!');
+      } else {
+        addToast('danger', `Error rejecting trade: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      addToast('danger', `Error rejecting trade: Please contact admin for this`);
+    }
+  }
+
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection((prevDirection) => (prevDirection === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+
+    const sortedData = [...data].sort((a, b) => {
+      if (column === 'timestamp') {
+        // Special handling for timestamp
+        return sortDirection === 'asc'
+          ? new Date(a.timestamp) - new Date(b.timestamp)
+          : new Date(b.timestamp) - new Date(a.timestamp);
+      }
+
+      if (a[column] < b[column]) return sortDirection === 'asc' ? -1 : 1;
+      if (a[column] > b[column]) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    setData(sortedData);
+  };
+
   return (
     <CContainer>
-      <CCard className="mb-4">
-        <CCardHeader>Your outstanding requests from other companies</CCardHeader>
-        <CCallout>Note that every credit costs $10</CCallout>
-        <CButton color="success" variant="outline">Accept</CButton>
-        <CButton color="danger" variant="outline">Reject</CButton>
-        <>
-        </>
-      </CCard>
+      <CCard>
+        <CCardBody>            
+          <CTable striped hover>
+            <CTableHead>
+              <CTableRow>
+                {columns.map((col, index) => (
+                  <CTableHeaderCell key={index}>
+                    {col}
+                    <CButton
+                      size="sm"
+                      color="link"
+                      onClick={() => handleSort(col)}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      {sortColumn === col ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+                    </CButton>
+                  </CTableHeaderCell>
+                ))}
+                <CTableHeaderCell>
+                  Action
+                </CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {data.map((row, rowIndex) => (
+                <CTableRow
+                  key={rowIndex}
+                  className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
+                >
+                  <CFormCheck id="defaultCheck1" label="" />
 
+                    
+                  {columns.map((col, colIndex) => (
+                    <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
+                  ))}
+                    <CTableDataCell>
+                    <CButton
+                      size="sm"
+                      color="success"
+                      onClick={() => handleAccept(row)}
+                      >
+                    ACCEPT
+                    </CButton>
+                    <CButton
+                      size="sm"
+                      color="danger"
+                      onClick={() => handleReject(row)}
+                    >
+                    REJECT
+                    </CButton>
+                  </CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
       <CToaster
         placement="top-end"
         style={{
@@ -119,9 +236,7 @@ const OrderRequests = () => {
           <CToast key={toast.id} autohide={true} visible={true} color={toast.color}>
             <CToastBody>
               {toast.message}
-              <CToastClose
-                onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-              />
+              <CToastClose onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
             </CToastBody>
           </CToast>
         ))}
