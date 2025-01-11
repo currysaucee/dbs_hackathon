@@ -18,7 +18,6 @@ const Register = React.lazy(() => import('./views/pages/Register'))
 const Page404 = React.lazy(() => import('./views/pages/Page404')) 
 const Page500 = React.lazy(() => import('./views/pages/Page500')) 
 const Dashboard = React.lazy(() => import('./views/pages/Dashboard')) 
-const Order = React.lazy(() => import('./views/pages/Order')) 
 const MakeRequest = React.lazy(() => import('./views/pages/MakeRequest')) 
 const OrderRequests = React.lazy(() => import('./views/pages/OrderRequests')) 
 
