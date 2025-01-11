@@ -7,3 +7,9 @@ class Alert(db.Model):
     alertDateTime = db.Column(db.DateTime, nullable=False)
     alertText = db.Column(db.String(120), nullable=False)
     alertStatus = db.Column(db.String(120), nullable=False)
+
+    def __init__(self, accountId, alertDateTime=None, alertText=None, alertStatus=None):
+        self.accountId = accountId
+        self.alertDateTime = alertDateTime
+        self.alertText = alertText
+        self.alertStatus = alertStatus
