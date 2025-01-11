@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 // ADD HERE FOR CONSTANTS
 const config = {
-  API_BASE_URL: "http://localhost:8080",
-  SOCKET_BASE_URL: "http://localhost:8080",
+  API_BASE_URL: 'http://localhost:7070',
+  SOCKET_BASE_URL: 'http://localhost:7070',
   ACCESS_TOKEN_REFRESH_INTERVAL: 10000,
   LOGIN_ENDPOINT: "auth/login",
   REGISTER_ENDPOINT: "auth/register",
@@ -17,8 +18,5 @@ const config = {
   COMPANIES: ['Apple', 'Amazon', 'Tesla', 'Google', 'Microsoft'],
   MOCK_ACCOUNT_BALANCE: 1000000,
   MOCK_CARBON_CREDIT: 1000,
-  MOCK_ACCOUNT_NAME: "Aloysius's Company"
-};
-  
-  export default config;
 
+export default config
