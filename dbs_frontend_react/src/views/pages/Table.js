@@ -15,8 +15,8 @@ import { io } from 'socket.io-client';
 import config from '../../config';
 
 const Table = () => {
-  console.log("Table page is loaded");
-  const [data, setData] = useState([]);
+  console.log("Table page is loaded"); 
+  const [data, setData] = useState([]); 
   const [columns, setColumns] = useState([]);
   const [newRowId, setNewRowId] = useState(null); 
   const [sortColumn, setSortColumn] = useState('timestamp');

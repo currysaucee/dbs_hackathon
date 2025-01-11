@@ -17,7 +17,9 @@ import {
   CToaster,
   CRow,
   CCol,
-  CFormCheck
+  CFormCheck,
+  CCardHeader,
+  CCallout
 } from '@coreui/react';
 import { io } from 'socket.io-client'; 
 import config from '../../config';
@@ -169,7 +171,23 @@ const OrderRequests = () => {
   return (
     <CContainer>
       <CCard>
-        <CCardBody>            
+        <CCardBody>   
+        <CCardHeader>Approve/Reject Requests</CCardHeader>
+        <CCallout>Click on all the checkboxes to select requests to accept</CCallout>
+        <CButton
+                      size="sm"
+                      color="success"
+                      onClick={() => handleAccept(row)}
+                      >
+                    ACCEPT
+                    </CButton>      
+                    <CButton
+                      size="sm"
+                      color="danger"
+                      onClick={() => handleAccept(row)}
+                      >
+                    REJECT
+                    </CButton>      
           <CTable striped hover>
             <CTableHead>
               <CTableRow>
@@ -203,22 +221,7 @@ const OrderRequests = () => {
                   {columns.map((col, colIndex) => (
                     <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
                   ))}
-                    <CTableDataCell>
-                    <CButton
-                      size="sm"
-                      color="success"
-                      onClick={() => handleAccept(row)}
-                      >
-                    ACCEPT
-                    </CButton>
-                    <CButton
-                      size="sm"
-                      color="danger"
-                      onClick={() => handleReject(row)}
-                    >
-                    REJECT
-                    </CButton>
-                  </CTableDataCell>
+                    
                 </CTableRow>
               ))}
             </CTableBody>
