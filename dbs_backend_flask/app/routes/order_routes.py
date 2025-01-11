@@ -11,8 +11,10 @@ def get_all_orders():
     orders = Order.query.all()
     return jsonify({"message": orders}), 200
 
-@bp.route("/get_order_by_id/<string:id>", methods=["GET"])
-def get_order_by_id(id):
+@bp.route("/get_order_by_id", methods=["GET"])
+def get_order_by_id():
+    data = request.json
+    id = data.get("id")
     order = Order.query.filter_by(id=id).first()
     if not order:
         return jsonify({"message": "Order not found"}), 404
@@ -29,6 +31,8 @@ def create_order():
             alertText = f"You have yet to approve {data.get("requestorId")}'s request to {data.get("requestType")} {data.get("carbon_quantity")} units of carbon.",
             alertStatus = "Scheduled"
         )
+
+        db.session.add(new_alert)
         
         new_order = Order(
             requestor_id = data.get("requestorId"),
@@ -52,12 +56,14 @@ def create_order():
         return jsonify({"message": "There was a problem creating the order."}), 400
 
 
-@bp.route("/delete_order/<string:id>", methods=["DELETE"])
-def delete_Order(id):
+@bp.route("/delete_order", methods=["DELETE"])
+def delete_order():
+    data = request.json
+    id = data.get("id")
     order = Order.query.filter_by(id=id).first()
 
     if not order:
-        return jsonify({"error": "Order with ID not found and cannot be deleted"}), 404
+        return jsonify({"message": "Order with ID not found and cannot be deleted"}), 404
 
     db.session.delete(order)
     db.session.commit()

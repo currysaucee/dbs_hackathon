@@ -17,8 +17,10 @@ def get_all_accounts():
     accounts = Account.query.all()
     return jsonify(accounts), 200
 
-@bp.route("/get_account_by_id/<string:id>", methods=["GET"])
-def get_account_by_id(id):
+@bp.route("/get_account_by_id", methods=["GET"])
+def get_account_by_id():
+    data = request.json()
+    id = data.get("id")
     account = Account.query.filter_by(id=id).first()
     if not account:
         return jsonify({"message": "Account not found"}), 404
