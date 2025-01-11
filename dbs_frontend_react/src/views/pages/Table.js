@@ -20,7 +20,25 @@ const Table = () => {
   const [columns, setColumns] = useState([]);
   const [newRowId, setNewRowId] = useState(null); 
   const [sortColumn, setSortColumn] = useState('timestamp');
+  const [accountBalance, setAccountBalance] = useState(config.MOCK_ACCOUNT_BALANCE);
   const [sortDirection, setSortDirection] = useState('desc');
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/${config.ACCOUNT_ENDPOINT}`);
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setAccountBalance(result.balance)
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchCompanyDetails();
+  })
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,7 +101,7 @@ const Table = () => {
     <CContainer>
       <CCard>
         <CCardBody>
-          <h3>Dynamic Data Table</h3>
+          <h3>Balance: {accountBalance}</h3>
           <CTable striped hover>
             <CTableHead>
               <CTableRow>

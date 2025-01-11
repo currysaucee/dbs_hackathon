@@ -10,6 +10,7 @@ const config = {
   NEW_TRADE_ENDPOINT: "data/trade",
   MOCK_DATA_ENDPOINT: "data/get_data",
   COMPANIES: ['Apple', 'Amazon', 'Tesla', 'Google', 'Microsoft'],
+  MOCK_ACCOUNT_BALANCE: 1000000
 };
   
   export default config;
