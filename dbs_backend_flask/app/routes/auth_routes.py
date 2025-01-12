@@ -30,6 +30,7 @@ def login():
     data = request.json
 
     account = Account.query.filter_by(email=data["email"]).first()
+    print(account)
     if not account or not verify_password(account.password, data["password"]):
         return jsonify({"error": "Invalid credentials"}), 401
 

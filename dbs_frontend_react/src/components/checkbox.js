@@ -2,18 +2,19 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
 
-function Checkbox({ label = "Default Checkbox", onChange, row }) {
+function Checkbox({ label = "Default Checkbox", onChangeParent, row }) {
     const [isChecked, setIsChecked] = useState(false);
 
     const handleCheckboxChange = (event) => {
       const checkedStatus = event.target.checked;
+      console.log("checkbox checked to", checkedStatus)
+      console.log(row)
       setIsChecked(checkedStatus);
-      if (onChange) {
-        onChange(checkedStatus, row); 
-      }
+      onChangeParent(checkedStatus, row); 
+    
     };
-
-  return (
+ 
+  return (  
     <div>
       <label>
         <input

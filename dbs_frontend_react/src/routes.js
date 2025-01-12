@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React from 'react'
 
 // ADD HERE TO REGISTER YOUR PAGE

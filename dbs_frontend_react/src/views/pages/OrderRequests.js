@@ -35,9 +35,26 @@ const OrderRequests = () => {
   const [accountBalance, setAccountBalance] = useState(config.MOCK_ACCOUNT_BALANCE);
   const [accountName, setAccountName] = useState(config.MOCK_ACCOUNT_NAME);
   const [carbonCredit, setCarbonCredit] = useState(config.MOCK_CARBON_CREDIT);
-  const [sortDirection, setSortDirection] = useState('desc');
-  const [checked, setChecked] = useState([])
+  const [sortDirection, setSortDirection] = useState('desc'); 
+  var [checked, setChecked] = useState([]) 
+  const trueValue = true
+  const falseValue = false
     // setBoolChecked(Array(boolChecked.length).fill(0))
+
+    const onSubmitBulkRequest = (accept_or_reject) => {
+        console.log(accept_or_reject)
+        for (let i = 0; i < checked.length; i++) {
+            const row = checked[i]
+            console.log(row, 'onSubmitBulkRequest')
+            if (Boolean(accept_or_reject)) {
+                console.log('handling accept')
+                handleAccept(row)
+            } else {
+                console.log('handling reject')
+                handleReject(row) 
+            }
+        }
+    }
 
   const addToast = (color, message) => {
     const newToast = { id: Date.now(), color, message };
@@ -56,17 +73,6 @@ const OrderRequests = () => {
         if (!checked.includes(row)) {
             checked.push(row);
           }
-    }
-    // Call a different function and pass the isChecked value
-    AcceptorDenyTrade(isChecked, row);
-    
-  };
-
-  const AcceptorDenyTrade = (isChecked, row) => {
-    if (isChecked) {
-        handleAccept(row)
-    } else {
-        handleReject(row)
     }
   };
 
@@ -122,16 +128,10 @@ const OrderRequests = () => {
       socket.disconnect();
     };
   }, []);
-  const onChangeCheckbox = (index) => {
-    boolChecked[index] = True
-
-  }
 
   const handleAccept = async (row) => {
-
-    console.log(row)
     try{
-      const response = await fetch(`${config.API_BASE_URL}/${config.ACCEPT_ORDER_ENDPOINT}`, {
+      const response = await fetch(`${config.API_BASE_URL}/${config.ACCEPT_TRADE_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ const OrderRequests = () => {
         addToast('danger', `Error accepting trade: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.log("got error")
+      console.log("got error with accept trade for", row)
       addToast('danger', `Error accepting trade: Please contact admin for this`);
     }
   }
@@ -155,7 +155,7 @@ const OrderRequests = () => {
   const handleReject = async (row) => {
     console.log(row)
     try{
-      const response = await fetch(`${config.API_BASE_URL}/${config.REJECT_ORDER_ENDPOINT}`, {
+      const response = await fetch(`${config.API_BASE_URL}/${config.REJECT_TRADE_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,6 +171,7 @@ const OrderRequests = () => {
         addToast('danger', `Error rejecting trade: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
+      console.log("got error with reject trade for", row)
       addToast('danger', `Error rejecting trade: Please contact admin for this`);
     }
   }
@@ -207,14 +208,14 @@ const OrderRequests = () => {
         <CButton
                       size="sm"
                       color="success"
-                      onClick={() => handleAccept(row)}
+                      onClick={() => onSubmitBulkRequest(trueValue)}
                       >
                     ACCEPT
                     </CButton>      
                     <CButton
                       size="sm"
                       color="danger"
-                      onClick={() => handleAccept(row)}
+                      onClick={() => onSubmitBulkRequest(falseValue)}
                       >
                     REJECT
                     </CButton>      
@@ -245,7 +246,7 @@ const OrderRequests = () => {
                   key={rowIndex}
                   className={newRowId === row.uuid || newRowId === row.id ? 'highlight-row' : ''}
                 >
-                  <Checkbox label="" onchange = {handleCheckboxStatus} row = {rowIndex}/>
+                  <Checkbox label="" onChangeParent = {handleCheckboxStatus} row = {row}/>
                     
                   {columns.map((col, colIndex) => (
                     <CTableDataCell key={colIndex}>{row[col]}</CTableDataCell>
